@@ -16,9 +16,9 @@ try:
         pressure = sense.get_pressure()
         pressure = round(pressure, 1)
         time.sleep(1)
-        sense.show_message("Temperature C" + str(temp) 
-            + "Humidity:" + str(humidity) 
-            + "Pressure:" + str(pressure), 
+        sense.show_message("Temperature:  " + str(fahrenheit - 3) 
+            + "Humidity:  " + str(humidity) 
+            + "Pressure:  " + str(pressure), 
             scroll_speed=(0.08), 
             back_colour= [0,0,200])
 except KeyboardInterrupt:
