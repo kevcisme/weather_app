@@ -1,8 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from datetime import datetime, timezone
 from .hat import get_sense
 from .settings import settings
-from .s3 import put_json_reading
+from .s3 import put_json_reading, get_readings_last_n_hours
 import asyncio
 
 app = FastAPI()
@@ -50,3 +50,32 @@ async def start():
 @app.get("/latest")
 def get_latest():
     return latest
+
+@app.get("/history")
+def get_history(
+    hours: int = Query(default=24, ge=1, le=168, description="Number of hours to look back (1-168)")
+):
+    """
+    Retrieve weather readings from the last N hours.
+    
+    Args:
+        hours: Number of hours to look back (default: 24, max: 168/7 days)
+    
+    Returns:
+        Readings sorted by timestamp (oldest first).
+    """
+    try:
+        readings = get_readings_last_n_hours(hours)
+        return {
+            "hours": hours,
+            "count": len(readings),
+            "readings": readings
+        }
+    except Exception as e:
+        print(f"Error retrieving {hours}h history: {e}", flush=True)
+        return {
+            "error": str(e),
+            "hours": hours,
+            "count": 0,
+            "readings": []
+        }
