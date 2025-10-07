@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timezone
 from .hat import get_sense
 from .settings import settings
@@ -6,6 +7,15 @@ from .s3 import put_json_reading, get_readings_last_n_hours
 import asyncio
 
 app = FastAPI()
+
+# Configure CORS to allow frontend to communicate with backend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Add your production domain here
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 sense = get_sense()
 latest = {}
 
