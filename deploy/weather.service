@@ -4,10 +4,11 @@ After=network-online.target
 
 [Service]
 User=pi
-WorkingDirectory=/home/pi/apps/raspi-weather-station/backend
-Environment="PATH=/home/pi/apps/raspi-weather-station/backend/.venv/bin"
-ExecStart=/home/pi/apps/raspi-weather-station/backend/.venv/bin/uvicorn weather.api:app --host 0.0.0.0 --port 8000
+WorkingDirectory=/home/pi/apps/weather_app/backend
+Environment="PATH=/home/pi/.local/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/home/pi/.local/bin/uv run uvicorn weather.api:app --host 0.0.0.0 --port 8000
 Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target

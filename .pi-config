@@ -1,0 +1,11 @@
+# Raspberry Pi Configuration
+# This file is used by deployment scripts
+
+# IP address or hostname of your Raspberry Pi
+PI_HOST=192.168.86.49
+
+# SSH user (usually 'pi')
+PI_USER=pi
+
+# Full SSH connection string
+PI_SSH=${PI_USER}@${PI_HOST}
