@@ -12,6 +12,7 @@ dependencies = [
   "boto3",
   "sense-emu>=1.2.1",
   "python-dotenv",
+  "sense-hat"
 ]
 
 [tool.hatch.build.targets.wheel]

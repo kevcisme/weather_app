@@ -18,13 +18,17 @@ def get_sense():
     try:
         # on the Pi
         from sense_hat import SenseHat
+        print("Successfully imported sense_hat, initializing hardware...")
         return SenseHat()
-    except Exception:
+    except Exception as e:
+        print(f"Failed to use real sense_hat: {e}")
         try:
             # local emulator (requires sense_emu_gui running)
             from sense_emu import SenseHat
+            print("Using sense_emu emulator")
             return SenseHat()
-        except Exception:
+        except Exception as e2:
             # fallback to mock for development
+            print(f"Failed to use emulator: {e2}")
             print("Using mock SenseHat for development")
             return MockSenseHat()
