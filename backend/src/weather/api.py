@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from datetime import datetime, timezone
 from .hat import get_sense
 from .settings import settings
+from .s3 import put_json_reading
 import asyncio
 
 app = FastAPI()
@@ -21,6 +22,12 @@ async def start():
                     "humidity": round(sense.get_humidity(),2),
                     "pressure": round(sense.get_pressure(),2),
                 }
+                # Upload to S3
+                try:
+                    put_json_reading(latest)
+                    print(f"Uploaded to S3: {latest['ts']}", flush=True)
+                except Exception as e:
+                    print(f"S3 upload error: {e}", flush=True)
             except Exception as e:
                 print(f"Error reading sensor data: {e}")
             await asyncio.sleep(settings.sample_interval_sec)
