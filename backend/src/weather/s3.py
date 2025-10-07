@@ -2,7 +2,13 @@ import json, time
 import boto3
 from .settings import settings
 
-_s3 = boto3.client("s3", region_name=settings.aws_region)
+# Create S3 client with explicit credentials from settings
+_s3 = boto3.client(
+    "s3",
+    aws_access_key_id=settings.aws_access_key_id,
+    aws_secret_access_key=settings.aws_secret_access_key,
+    region_name=settings.aws_region
+)
 
 def put_json_reading(d: dict):
     # key like: raspi-weather/2025-10-06/2025-10-06T20-15-03Z.json

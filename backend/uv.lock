@@ -150,6 +150,7 @@ source = { editable = "." }
 dependencies = [
     { name = "boto3" },
     { name = "fastapi" },
+    { name = "python-dotenv" },
     { name = "sense-emu" },
     { name = "uvicorn", extra = ["standard"] },
 ]
@@ -158,6 +159,7 @@ dependencies = [
 requires-dist = [
     { name = "boto3" },
     { name = "fastapi" },
+    { name = "python-dotenv" },
     { name = "sense-emu", specifier = ">=1.2.1" },
     { name = "uvicorn", extras = ["standard"] },
 ]
