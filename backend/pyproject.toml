@@ -1,3 +1,7 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "kevins-weather-backend"
 version = "0.1.0"
@@ -6,6 +10,11 @@ dependencies = [
   "fastapi",
   "uvicorn[standard]",
   "boto3",
+  "sense-emu>=1.2.1",
 ]
 
-[tool.uv] 
+[tool.hatch.build.targets.wheel]
+packages = ["src/weather"]
+
+[tool.uv]
+package = true 
