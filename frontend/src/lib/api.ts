@@ -2,7 +2,13 @@
  * API client for weather backend
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// In production (deployed on Pi with nginx), use relative /api/ path
+// In development, use localhost:8000 directly
+const API_URL = process.env.NEXT_PUBLIC_API_URL || (
+  typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? '/api'  // Production: use nginx proxy
+    : 'http://localhost:8000'  // Development: direct connection
+);
 
 export interface WeatherReading {
   ts: string;

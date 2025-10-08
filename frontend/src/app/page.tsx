@@ -79,7 +79,7 @@ export default function Dashboard() {
           <div className="mb-6 rounded-lg border border-destructive bg-destructive/10 p-4">
             <p className="text-sm text-destructive">{error}</p>
             <p className="text-xs text-muted-foreground mt-2">
-              Ensure your FastAPI backend is running on {process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}
+              Backend API: {process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? '/api (via nginx)' : 'http://localhost:8000')}
             </p>
           </div>
         )}

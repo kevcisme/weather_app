@@ -8,9 +8,10 @@ import asyncio
 app = FastAPI()
 
 # Configure CORS to allow frontend to communicate with backend
+# Allows local development and any IP access (for Raspberry Pi deployment)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Add your production domain here
+    allow_origins=["*"],  # Allow all origins since we're behind nginx in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
