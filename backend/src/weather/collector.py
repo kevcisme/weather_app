@@ -7,12 +7,19 @@ from .settings import settings
 sense = get_sense()
 
 def read_measurement():
+    # Apply calibration offset to compensate for CPU heat
+    raw_temp_c = sense.get_temperature()
+    calibrated_temp_c = raw_temp_c - settings.temp_calibration_offset_c
+    
     return {
         "ts": datetime.now(timezone.utc).isoformat().replace("+00:00","Z"),
-        "temp_c": round(sense.get_temperature(), 2),
-        "temp_f": round(1.8 * sense.get_temperature() + 32, 2),
+        "temp_c": round(calibrated_temp_c, 2),
+        "temp_f": round(1.8 * calibrated_temp_c + 32, 2),
         "humidity": round(sense.get_humidity(), 2),
         "pressure": round(sense.get_pressure(), 2),
+        "temp_from_cpu": round(raw_temp_c, 2),
+        "temp_from_humidity": round(sense.get_temperature_from_humidity(), 2),
+        "temp_from_pressure": round(sense.get_temperature_from_pressure(), 2),
     }
 
 if __name__ == "__main__":

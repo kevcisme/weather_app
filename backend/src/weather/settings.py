@@ -19,5 +19,9 @@ class Settings(BaseModel):
     
     # Application Configuration
     sample_interval_sec: int = int(os.getenv("SAMPLE_INTERVAL_SEC", "900")) # i picked every 15 minutes here, just because round
+    
+    # Sensor Calibration
+    # Temperature offset in Celsius to subtract from raw reading (CPU heat compensation)
+    temp_calibration_offset_c: float = float(os.getenv("TEMP_CALIBRATION_OFFSET_C", "10.0"))
 
 settings = Settings()
