@@ -2,7 +2,7 @@ from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from .collector import read_measurement
 from .settings import settings
-from .s3 import get_readings_last_n_hours
+from .s3 import get_readings_last_n_hours, get_latest_reading_from_s3, put_json_reading
 import asyncio
 
 app = FastAPI()
@@ -16,34 +16,45 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-latest = {}
-
 @app.on_event("startup")
 async def start():
-    async def loop():
-        global latest
+    """
+    Background task that uploads sensor readings to S3 every 15 minutes.
+    """
+    async def upload_loop():
         while True:
             try:
-                # Use the same measurement logic as the collector
-                latest = read_measurement()
-                # Note: S3 upload is done by the separate collector service
-                print(f"Updated reading: {latest['ts']}", flush=True)
+                # Read measurement and upload to S3
+                reading = read_measurement()
+                put_json_reading(reading)
+                print(f"Uploaded to S3: {reading['ts']}", flush=True)
             except Exception as e:
-                print(f"Error reading sensor data: {e}")
+                print(f"Error uploading to S3: {e}", flush=True)
             await asyncio.sleep(settings.sample_interval_sec)
     
-    # Populate initial data immediately
-    try:
-        global latest
-        latest = read_measurement()
-    except Exception as e:
-        print(f"Error initializing sensor data: {e}")
-    
-    asyncio.create_task(loop())
+    asyncio.create_task(upload_loop())
 
 @app.get("/latest")
 def get_latest():
-    return latest
+    """
+    Get the most recent weather reading from S3.
+    This represents the last stored measurement.
+    """
+    reading = get_latest_reading_from_s3()
+    if reading is None:
+        return {"error": "No readings found in S3"}
+    return reading
+
+@app.get("/current")
+def get_current():
+    """
+    Get a real-time reading directly from the sensor.
+    This reading is NOT stored in S3 - it's captured at the moment of the request.
+    """
+    try:
+        return read_measurement()
+    except Exception as e:
+        return {"error": f"Failed to read sensor: {str(e)}"}
 
 @app.get("/history")
 def get_history(
