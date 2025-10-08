@@ -1,9 +1,8 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-from datetime import datetime, timezone
-from .hat import get_sense
+from .collector import read_measurement
 from .settings import settings
-from .s3 import put_json_reading, get_readings_last_n_hours
+from .s3 import get_readings_last_n_hours
 import asyncio
 
 app = FastAPI()
@@ -16,7 +15,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-sense = get_sense()
+
 latest = {}
 
 @app.on_event("startup")
@@ -25,19 +24,10 @@ async def start():
         global latest
         while True:
             try:
-                latest = {
-                    "ts": datetime.now(timezone.utc).isoformat().replace("+00:00","Z"),
-                    "temp_c": round(sense.get_temperature(),2),
-                    "temp_f": round(1.8 * sense.get_temperature() + 32, 2),
-                    "humidity": round(sense.get_humidity(),2),
-                    "pressure": round(sense.get_pressure(),2),
-                }
-                # Upload to S3
-                try:
-                    put_json_reading(latest)
-                    print(f"Uploaded to S3: {latest['ts']}", flush=True)
-                except Exception as e:
-                    print(f"S3 upload error: {e}", flush=True)
+                # Use the same measurement logic as the collector
+                latest = read_measurement()
+                # Note: S3 upload is done by the separate collector service
+                print(f"Updated reading: {latest['ts']}", flush=True)
             except Exception as e:
                 print(f"Error reading sensor data: {e}")
             await asyncio.sleep(settings.sample_interval_sec)
@@ -45,13 +35,7 @@ async def start():
     # Populate initial data immediately
     try:
         global latest
-        latest = {
-            "ts": datetime.now(timezone.utc).isoformat().replace("+00:00","Z"),
-            "temp_c": round(sense.get_temperature(),2),
-            "temp_f": round(1.8 * sense.get_temperature() + 32, 2),
-            "humidity": round(sense.get_humidity(),2),
-            "pressure": round(sense.get_pressure(),2),
-        }
+        latest = read_measurement()
     except Exception as e:
         print(f"Error initializing sensor data: {e}")
     
