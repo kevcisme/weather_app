@@ -19,7 +19,4 @@ dependencies = [
 packages = ["src/weather"]
 
 [tool.uv]
-package = true
-
-[tool.uv.pip]
-system-site-packages = true 
+package = true 
