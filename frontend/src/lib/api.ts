@@ -2,13 +2,38 @@
  * API client for weather backend
  */
 
-// In production (deployed on Pi with nginx), use relative /api/ path
-// In development, use localhost:8000 directly
-const API_URL = process.env.NEXT_PUBLIC_API_URL || (
-  typeof window !== 'undefined' && window.location.hostname !== 'localhost'
-    ? '/api'  // Production: use nginx proxy
-    : 'http://localhost:8000'  // Development: direct connection
-);
+/**
+ * Determine the API URL based on environment and context
+ * - NEXT_PUBLIC_API_URL env var takes precedence (for local Mac development)
+ * - In browser: use window.location to determine the right URL
+ * - On server (SSR): default to localhost:8000 (assumes backend on same machine)
+ */
+function getApiUrl(): string {
+  // Environment variable takes precedence (used for local development)
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+
+  // Browser context - determine based on hostname
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    
+    // Local development on Mac
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:8000';
+    }
+    
+    // Accessing Pi directly via IP or hostname
+    // Backend is on the same machine, so use the same host
+    return `http://${hostname}:8000`;
+  }
+
+  // Server-side rendering fallback
+  // Assumes frontend and backend are on the same machine (Pi deployment)
+  return 'http://localhost:8000';
+}
+
+const API_URL = getApiUrl();
 
 export interface WeatherReading {
   ts: string;
