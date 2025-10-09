@@ -23,7 +23,8 @@ class Settings(BaseModel):
     # Sensor Calibration
     # Static temperature offset in Celsius to subtract from pressure sensor reading
     # This compensates for ambient heat from the Pi board
-    temp_calibration_offset_c: float = float(os.getenv("TEMP_CALIBRATION_OFFSET_C", "12.0"))
+    # Calibrated: 35.2°C (pressure sensor) - 29°C (actual) = 6.2°C
+    temp_calibration_offset_c: float = float(os.getenv("TEMP_CALIBRATION_OFFSET_C", "6.2"))
     
     # Dynamic CPU temperature compensation (advanced)
     use_cpu_compensation: bool = os.getenv("USE_CPU_COMPENSATION", "true").lower() == "true"
