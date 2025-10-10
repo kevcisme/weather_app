@@ -89,7 +89,7 @@ Or just visit in your browser:
 ## 🎉 You're Done!
 
 From now on, every time you push to `main` or `master`:
-1. GitHub Actions automatically runs!
+1. GitHub Actions automatically runs
 2. Code is deployed to your Pi
 3. Services are restarted
 4. Health checks verify everything works
