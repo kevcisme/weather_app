@@ -16,9 +16,27 @@ A full-stack weather monitoring application with real-time data collection, S3 s
                                    ▼
                           ┌─────────────────┐
                           │   AWS S3        │
-                          │   Storage       │
+                          │ Medallion Arch  │
+                          │  Bronze│Silver  │
                           └─────────────────┘
 ```
+
+### Medallion Architecture
+
+The application uses a **medallion architecture** pattern with two data layers:
+
+- **Bronze Layer** (`samples/`): Raw sensor readings, source of truth
+- **Silver Layer** (`silver/`): Enriched data with calculated metrics
+  - Dew point (temperature + humidity)
+  - Pressure trends (3h/6h changes)
+  - Daily statistics (min/max/avg)
+  - Comfort index
+
+This architecture provides:
+- **Data quality**: Raw data always preserved
+- **Flexibility**: Easy to add new metrics via backfill
+- **Performance**: Pre-calculated metrics for fast queries
+- **Recovery**: Can regenerate silver layer from bronze anytime
 
 ## Features
 
@@ -28,6 +46,9 @@ A full-stack weather monitoring application with real-time data collection, S3 s
 - 📊 RESTful API endpoints for current and historical data
 - ⚙️ Configurable sampling intervals
 - 🔒 Environment-based configuration
+- 🏗️ Medallion architecture (bronze/silver layers)
+- 🔄 Backfill utility for regenerating metrics
+- 📈 Advanced metrics: dew point, pressure trends, daily stats
 
 ### Frontend (Next.js + TypeScript)
 - 📱 Responsive, modern dashboard interface
@@ -35,6 +56,9 @@ A full-stack weather monitoring application with real-time data collection, S3 s
 - ⏱️ Real-time updates (auto-refresh every 60 seconds)
 - 📅 Flexible time range selection (1 hour to 7 days)
 - 🎨 Beautiful UI built with Shadcn UI and Tailwind CSS
+- 🌡️ Dew point display with comfort indicators
+- 📊 Pressure trend visualization with weather forecasting
+- 📋 Daily summary statistics
 
 ## Quick Start
 
@@ -115,6 +139,7 @@ weather_app/
 
 ## Data Format
 
+### Bronze Layer (Raw Sensor Data)
 Weather readings are stored as JSON in S3:
 
 ```json
@@ -123,19 +148,50 @@ Weather readings are stored as JSON in S3:
   "temp_c": 22.5,
   "temp_f": 72.5,
   "humidity": 45.2,
-  "pressure": 1013.25
+  "pressure": 1013.25,
+  "temp_from_humidity": 23.1,
+  "temp_from_pressure": 22.8,
+  "cpu_temp": 45.0
+}
+```
+
+### Silver Layer (Enriched Data)
+Includes all bronze fields plus calculated metrics:
+
+```json
+{
+  "ts": "2025-10-07T12:31:00.000Z",
+  "temp_f": 72.5,
+  "humidity": 45.2,
+  "pressure": 1013.25,
+  "dew_point_f": 50.2,
+  "dew_point_c": 10.1,
+  "comfort_index": "comfortable",
+  "pressure_trend_3h": -2.5,
+  "pressure_trend_6h": -4.2,
+  "pressure_trend_label": "falling",
+  "daily_temp_min": 68.0,
+  "daily_temp_max": 75.0,
+  "daily_temp_avg": 71.5
 }
 ```
 
 **S3 Structure:**
 ```
-s3://your-bucket/samples/
-  ├── 2025-10-07/
-  │   ├── 2025-10-07T00-31-00Z.json
-  │   ├── 2025-10-07T01-31-00Z.json
-  │   └── ...
-  └── 2025-10-08/
-      └── ...
+s3://your-bucket/
+  ├── samples/ (Bronze - Raw Data)
+  │   ├── 2025-10-07/
+  │   │   ├── 2025-10-07T00-31-00Z.json
+  │   │   ├── 2025-10-07T01-31-00Z.json
+  │   │   └── ...
+  │   └── 2025-10-08/
+  │       └── ...
+  └── silver/ (Silver - Enriched Data)
+      ├── 2025-10-07/
+      │   ├── 2025-10-07T00-31-00Z.json
+      │   └── ...
+      └── 2025-10-08/
+          └── ...
 ```
 
 ## Development
@@ -153,7 +209,15 @@ uv run pytest
 
 # Generate mock data for testing
 python generate_mock_data.py
+
+# Backfill silver layer from bronze data
+./quick-backfill.sh  # Interactive menu
+# OR
+python backfill_silver.py --days 7  # Last 7 days
+python backfill_silver.py --days 1 --dry-run  # Preview only
 ```
+
+See [BACKFILL_GUIDE.md](backend/BACKFILL_GUIDE.md) for detailed backfill documentation.
 
 ### Frontend Development
 
@@ -183,7 +247,8 @@ npm run lint
 | `AWS_SECRET_ACCESS_KEY` | AWS secret key | Required |
 | `AWS_REGION` | AWS region | `us-west-2` |
 | `S3_BUCKET` | S3 bucket name | Required |
-| `S3_PREFIX` | S3 key prefix | `samples` |
+| `S3_PREFIX` | S3 prefix for bronze layer | `samples` |
+| `S3_SILVER_PREFIX` | S3 prefix for silver layer | `silver` |
 | `SAMPLE_INTERVAL_SEC` | Seconds between readings | `900` (15 min) |
 
 ### Frontend Environment Variables
@@ -249,6 +314,11 @@ allow_origins=["http://localhost:3000", "https://your-domain.vercel.app"]
 - Verify AWS credentials are correct
 - Check S3 bucket permissions (PutObject, GetObject, ListBucket)
 - Ensure bucket exists and is in the correct region
+
+**"No readings found in silver layer"**
+- The silver layer may not have data yet if you just deployed
+- Run backfill to populate: `./quick-backfill.sh`
+- Or wait for new readings to be collected (every 15 minutes)
 
 ### Frontend Issues
 
