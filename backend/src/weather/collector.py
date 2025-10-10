@@ -108,9 +108,12 @@ def create_silver_reading(bronze_reading: dict) -> dict:
     
     # Filter to only today's readings
     today_str = today_start.strftime("%Y-%m-%d")
+    print(f"Daily stats calc: Looking for readings from {today_str}, found {len(todays_readings)} total readings", flush=True)
     todays_readings = [r for r in todays_readings if r["ts"].startswith(today_str)]
+    print(f"After filtering to today: {len(todays_readings)} readings", flush=True)
     
     daily_stats = calculate_daily_stats(todays_readings)
+    print(f"Calculated daily stats: {daily_stats}", flush=True)
     silver.update(daily_stats)
     
     return silver

@@ -22,6 +22,14 @@ export default function Dashboard() {
       try {
         setIsLoadingCurrent(true);
         const data = await getLatest();
+        console.log("Latest data:", data);
+        console.log("Daily stats:", {
+          daily_temp_min: data.daily_temp_min,
+          daily_temp_max: data.daily_temp_max,
+          daily_temp_avg: data.daily_temp_avg,
+          daily_humidity_avg: data.daily_humidity_avg,
+          daily_pressure_avg: data.daily_pressure_avg
+        });
         setCurrentData(data);
         setError(null);
       } catch (err) {
