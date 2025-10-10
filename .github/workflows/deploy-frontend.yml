@@ -16,6 +16,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
+      - name: Restore Environment Configuration
+        run: |
+          echo "🔧 Restoring .env file (needed for service restart)..."
+          mkdir -p $GITHUB_WORKSPACE/backend/src/weather
+          cp ~/.weather-config/backend.env $GITHUB_WORKSPACE/backend/src/weather/.env
+          echo "✅ Configuration restored"
+      
       - name: Show deployment info
         run: |
           echo "⚛️ Deploying Frontend Only"

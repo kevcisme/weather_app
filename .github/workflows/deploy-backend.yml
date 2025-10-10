@@ -16,6 +16,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
+      - name: Restore Environment Configuration
+        run: |
+          echo "🔧 Restoring .env file..."
+          mkdir -p $GITHUB_WORKSPACE/backend/src/weather
+          cp ~/.weather-config/backend.env $GITHUB_WORKSPACE/backend/src/weather/.env
+          echo "✅ Configuration restored"
+      
       - name: Show deployment info
         run: |
           echo "🐍 Deploying Backend Only"
@@ -26,6 +33,13 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/backend
           export PATH="$HOME/.cargo/bin:$PATH"
+          
+          # Ensure venv exists with system-site-packages (for Sense HAT)
+          if [ ! -d ".venv" ]; then
+            echo "Creating venv with system site packages..."
+            uv venv --system-site-packages
+          fi
+          
           uv sync
       
       - name: Restart Backend Service
