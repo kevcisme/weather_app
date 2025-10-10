@@ -64,7 +64,7 @@ export default function Dashboard() {
               <Cloud className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Weather Station</h1>
+              <h1 className="text-3xl font-bold tracking-tight">The Manoa Manor Weather Station</h1>
               <p className="text-sm text-muted-foreground">
                 Real-time environmental monitoring dashboard
               </p>
