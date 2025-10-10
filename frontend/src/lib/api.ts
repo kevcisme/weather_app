@@ -41,6 +41,9 @@ export interface WeatherReading {
   temp_f: number;
   humidity: number;
   pressure: number;
+  temp_from_humidity?: number;
+  temp_from_pressure?: number;
+  cpu_temp?: number | null;
 }
 
 export interface HistoryResponse {

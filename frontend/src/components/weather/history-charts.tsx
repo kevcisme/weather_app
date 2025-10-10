@@ -56,7 +56,8 @@ export function HistoryCharts({ data, isLoading, hours }: HistoryChartsProps) {
     .map((reading) => ({
       time: format(new Date(reading.ts), "MMM d HH:mm"),
       temp_f: reading.temp_f,
-      temp_c: reading.temp_c,
+      temp_from_humidity: reading.temp_from_humidity ? reading.temp_from_humidity * 1.8 + 32 : undefined,
+      temp_from_pressure: reading.temp_from_pressure ? reading.temp_from_pressure * 1.8 + 32 : undefined,
       humidity: reading.humidity,
       pressure: reading.pressure,
     }));
@@ -80,17 +81,9 @@ export function HistoryCharts({ data, isLoading, hours }: HistoryChartsProps) {
                 className="text-muted-foreground"
               />
               <YAxis 
-                yAxisId="left"
                 tick={{ fontSize: 12 }}
                 className="text-muted-foreground"
                 label={{ value: '°F', angle: -90, position: 'insideLeft' }}
-              />
-              <YAxis 
-                yAxisId="right"
-                orientation="right"
-                tick={{ fontSize: 12 }}
-                className="text-muted-foreground"
-                label={{ value: '°C', angle: 90, position: 'insideRight' }}
               />
               <Tooltip 
                 contentStyle={{ 
@@ -101,23 +94,30 @@ export function HistoryCharts({ data, isLoading, hours }: HistoryChartsProps) {
               />
               <Legend />
               <Line 
-                yAxisId="left"
                 type="monotone" 
                 dataKey="temp_f" 
                 stroke="hsl(var(--chart-1))" 
-                name="Temperature (°F)"
+                name="Calibrated Temp (°F)"
                 strokeWidth={2}
                 dot={false}
               />
               <Line 
-                yAxisId="right"
                 type="monotone" 
-                dataKey="temp_c" 
-                stroke="hsl(var(--chart-4))" 
-                name="Temperature (°C)"
+                dataKey="temp_from_humidity" 
+                stroke="hsl(var(--chart-2))" 
+                name="Temp from Humidity (°F)"
                 strokeWidth={2}
                 dot={false}
                 strokeDasharray="5 5"
+              />
+              <Line 
+                type="monotone" 
+                dataKey="temp_from_pressure" 
+                stroke="hsl(var(--chart-4))" 
+                name="Temp from Pressure (°F)"
+                strokeWidth={2}
+                dot={false}
+                strokeDasharray="3 3"
               />
             </LineChart>
           </ResponsiveContainer>
@@ -210,3 +210,4 @@ export function HistoryCharts({ data, isLoading, hours }: HistoryChartsProps) {
     </div>
   );
 }
+
