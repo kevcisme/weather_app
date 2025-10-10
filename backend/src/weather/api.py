@@ -46,33 +46,41 @@ def get_latest():
     """
     Get the most recent weather reading from S3 silver layer.
     This represents the last stored measurement with calculated metrics.
-    Daily stats are recalculated fresh from today's data.
+    Daily stats are recalculated fresh from today's data from the silver layer.
     """
     from datetime import datetime, timezone
-    from .s3 import get_readings_from_bronze
     from .calculations import calculate_daily_stats
     
     reading = get_latest_reading_from_s3()
     if reading is None:
         return {"error": "No readings found in S3"}
     
-    # Recalculate daily stats from today's bronze data
+    # Recalculate daily stats from today's silver data (not bronze)
+    # Silver data is already processed and more complete
     current_time = datetime.now(timezone.utc)
     today_start = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
     hours_since_midnight = (current_time - today_start).total_seconds() / 3600
-    todays_readings = get_readings_from_bronze(hours=int(hours_since_midnight) + 1)
+    
+    # Fetch from silver layer instead of bronze
+    todays_readings = get_readings_last_n_hours(hours=int(hours_since_midnight) + 1)
     
     # Filter to only today's readings
     today_str = today_start.strftime("%Y-%m-%d")
+    print(f"Looking for readings from today: {today_str}", flush=True)
+    print(f"Fetched {len(todays_readings)} total readings", flush=True)
+    
+    # Show sample timestamps for debugging
+    if todays_readings:
+        print(f"Sample timestamps: {[r['ts'][:10] for r in todays_readings[:5]]}", flush=True)
+    
     todays_readings = [r for r in todays_readings if r["ts"].startswith(today_str)]
+    print(f"After filtering to today: {len(todays_readings)} readings", flush=True)
     
     # Calculate and update daily stats
     daily_stats = calculate_daily_stats(todays_readings)
     reading.update(daily_stats)
     
     # Debug logging
-    print(f"Latest reading timestamp: {reading.get('ts')}", flush=True)
-    print(f"Found {len(todays_readings)} readings from today ({today_str})", flush=True)
     print(f"Daily stats - min: {daily_stats.get('daily_temp_min')}, max: {daily_stats.get('daily_temp_max')}, avg: {daily_stats.get('daily_temp_avg')}", flush=True)
     
     return reading
