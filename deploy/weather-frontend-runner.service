@@ -1,0 +1,16 @@
+[Unit]
+Description=Weather Station Frontend (Next.js - GitHub Runner)
+After=network-online.target weather.service
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/actions-runner/_work/weather_app/weather_app/frontend
+Environment="PATH=/home/pi/.local/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="NODE_ENV=production"
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+

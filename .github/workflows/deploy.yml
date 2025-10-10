@@ -1,0 +1,127 @@
+name: Deploy to Raspberry Pi
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:  # Allow manual triggers from GitHub UI
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Show deployment info
+        run: |
+          echo "🚀 Deploying Weather App to Raspberry Pi"
+          echo "============================================"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Author: ${{ github.actor }}"
+          echo "Workspace: $GITHUB_WORKSPACE"
+          echo ""
+      
+      - name: Deploy Backend
+        run: |
+          echo "📦 Deploying Backend..."
+          cd $GITHUB_WORKSPACE/backend
+          
+          # Ensure uv is in PATH
+          export PATH="$HOME/.cargo/bin:$PATH"
+          
+          # Install/update Python dependencies
+          uv sync
+          
+          echo "✅ Backend dependencies updated"
+      
+      - name: Deploy Frontend
+        run: |
+          echo "📦 Deploying Frontend..."
+          cd $GITHUB_WORKSPACE/frontend
+          
+          # Install dependencies (use npm ci for consistent installs)
+          npm ci
+          
+          # Build production bundle
+          npm run build
+          
+          echo "✅ Frontend built successfully"
+      
+      - name: Restart Services
+        run: |
+          echo "🔄 Restarting services..."
+          
+          # Restart backend service
+          sudo systemctl restart weather.service
+          echo "✅ Backend service restarted"
+          
+          # Restart frontend service
+          sudo systemctl restart weather-frontend.service
+          echo "✅ Frontend service restarted"
+      
+      - name: Wait for Services
+        run: |
+          echo "⏳ Waiting for services to start..."
+          sleep 5
+      
+      - name: Health Check - Backend
+        run: |
+          echo "🔍 Checking backend health..."
+          
+          if curl -f -s http://localhost:8000/latest > /dev/null; then
+            echo "✅ Backend is responding at http://localhost:8000/latest"
+          else
+            echo "❌ Backend health check failed"
+            echo "Checking service status..."
+            sudo systemctl status weather.service --no-pager || true
+            exit 1
+          fi
+      
+      - name: Health Check - Frontend
+        run: |
+          echo "🔍 Checking frontend health..."
+          
+          if curl -f -s http://localhost:3000 > /dev/null; then
+            echo "✅ Frontend is responding at http://localhost:3000"
+          else
+            echo "❌ Frontend health check failed"
+            echo "Checking service status..."
+            sudo systemctl status weather-frontend.service --no-pager || true
+            exit 1
+          fi
+      
+      - name: Deployment Summary
+        if: success()
+        run: |
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🎉 Deployment Successful!"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "📊 Dashboard: http://192.168.86.49:3000"
+          echo "🔌 API:       http://192.168.86.49:8000"
+          echo ""
+          echo "View logs:"
+          echo "  Backend:  journalctl -u weather.service -f"
+          echo "  Frontend: journalctl -u weather-frontend.service -f"
+          echo ""
+      
+      - name: Deployment Failed
+        if: failure()
+        run: |
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "❌ Deployment Failed"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "Check service status:"
+          echo "  sudo systemctl status weather.service"
+          echo "  sudo systemctl status weather-frontend.service"
+          echo ""
+          echo "Check logs:"
+          echo "  journalctl -u weather.service -n 50"
+          echo "  journalctl -u weather-frontend.service -n 50"
+          echo ""
+

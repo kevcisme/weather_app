@@ -1,0 +1,52 @@
+name: Deploy Frontend Only
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy-frontend:
+    runs-on: self-hosted
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Show deployment info
+        run: |
+          echo "⚛️ Deploying Frontend Only"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+      
+      - name: Deploy Frontend
+        run: |
+          cd $GITHUB_WORKSPACE/frontend
+          npm ci
+          npm run build
+      
+      - name: Restart Frontend Service
+        run: |
+          sudo systemctl restart weather-frontend.service
+          echo "✅ Frontend service restarted"
+      
+      - name: Wait and Health Check
+        run: |
+          sleep 3
+          if curl -f -s http://localhost:3000 > /dev/null; then
+            echo "✅ Frontend is healthy"
+          else
+            echo "❌ Frontend health check failed"
+            sudo systemctl status weather-frontend.service --no-pager || true
+            exit 1
+          fi
+      
+      - name: Success
+        if: success()
+        run: |
+          echo "🎉 Frontend deployment successful!"
+          echo "Dashboard: http://192.168.86.49:3000"
+

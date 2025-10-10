@@ -1,0 +1,52 @@
+name: Deploy Backend Only
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy-backend:
+    runs-on: self-hosted
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Show deployment info
+        run: |
+          echo "🐍 Deploying Backend Only"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+      
+      - name: Deploy Backend
+        run: |
+          cd $GITHUB_WORKSPACE/backend
+          export PATH="$HOME/.cargo/bin:$PATH"
+          uv sync
+      
+      - name: Restart Backend Service
+        run: |
+          sudo systemctl restart weather.service
+          echo "✅ Backend service restarted"
+      
+      - name: Wait and Health Check
+        run: |
+          sleep 3
+          if curl -f -s http://localhost:8000/latest > /dev/null; then
+            echo "✅ Backend is healthy"
+          else
+            echo "❌ Backend health check failed"
+            sudo systemctl status weather.service --no-pager || true
+            exit 1
+          fi
+      
+      - name: Success
+        if: success()
+        run: |
+          echo "🎉 Backend deployment successful!"
+          echo "API: http://192.168.86.49:8000"
+
