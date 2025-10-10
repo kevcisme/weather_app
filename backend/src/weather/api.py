@@ -59,10 +59,10 @@ def get_latest():
     # Silver data is already processed and more complete
     current_time = datetime.now(timezone.utc)
     today_start = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
-    hours_since_midnight = (current_time - today_start).total_seconds() / 3600
     
-    # Fetch from silver layer instead of bronze
-    todays_readings = get_readings_last_n_hours(hours=int(hours_since_midnight) + 1)
+    # Fetch last 24 hours to ensure we get all of today's readings
+    # (We'll filter to today after fetching)
+    todays_readings = get_readings_last_n_hours(hours=24)
     
     # Filter to only today's readings
     today_str = today_start.strftime("%Y-%m-%d")
