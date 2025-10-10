@@ -37,14 +37,29 @@ export function HistoryCharts({ data, isLoading, hours }: HistoryChartsProps) {
     );
   }
 
-  // Transform data for charts
-  const chartData = data.map((reading) => ({
-    time: format(new Date(reading.ts), "MMM d HH:mm"),
-    temp_f: reading.temp_f,
-    temp_c: reading.temp_c,
-    humidity: reading.humidity,
-    pressure: reading.pressure,
-  }));
+  // Transform data for charts - filter out invalid readings
+  const chartData = data
+    .filter((reading) => {
+      // Validate that the reading has all required fields and a valid timestamp
+      if (!reading.ts || !reading.temp_f || !reading.humidity || !reading.pressure) {
+        console.warn('Invalid reading found, skipping:', reading);
+        return false;
+      }
+      // Check if timestamp is valid
+      const date = new Date(reading.ts);
+      if (isNaN(date.getTime())) {
+        console.warn('Invalid timestamp found, skipping:', reading.ts);
+        return false;
+      }
+      return true;
+    })
+    .map((reading) => ({
+      time: format(new Date(reading.ts), "MMM d HH:mm"),
+      temp_f: reading.temp_f,
+      temp_c: reading.temp_c,
+      humidity: reading.humidity,
+      pressure: reading.pressure,
+    }));
 
   return (
     <div className="space-y-6">

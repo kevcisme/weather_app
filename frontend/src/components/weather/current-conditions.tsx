@@ -40,7 +40,20 @@ export function CurrentConditions({ data, isLoading }: CurrentConditionsProps) {
     );
   }
 
+  // Validate timestamp before parsing
   const timestamp = new Date(data.ts);
+  if (isNaN(timestamp.getTime())) {
+    console.error('Invalid timestamp in current data:', data.ts);
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Current Conditions</CardTitle>
+          <CardDescription>Invalid data received from backend</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   const formattedTime = format(timestamp, "PPpp");
 
   return (

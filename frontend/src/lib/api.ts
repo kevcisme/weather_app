@@ -61,7 +61,19 @@ export async function getLatest(): Promise<WeatherReading> {
     throw new Error(`Failed to fetch latest reading: ${response.statusText}`);
   }
   
-  return response.json();
+  const data = await response.json();
+  
+  // Check if the response contains an error
+  if ('error' in data) {
+    throw new Error(data.error);
+  }
+  
+  // Validate that we have the expected data structure
+  if (!data.ts || typeof data.temp_f !== 'number' || typeof data.humidity !== 'number' || typeof data.pressure !== 'number') {
+    throw new Error('Invalid data structure received from backend');
+  }
+  
+  return data;
 }
 
 /**
@@ -77,5 +89,28 @@ export async function getHistory(hours: number = 24): Promise<HistoryResponse> {
     throw new Error(`Failed to fetch history: ${response.statusText}`);
   }
   
-  return response.json();
+  const data = await response.json();
+  
+  // Check if the response contains an error
+  if ('error' in data) {
+    console.warn('Backend returned error:', data.error);
+    // Return empty readings rather than throwing, since the UI handles empty data gracefully
+    return {
+      hours: hours,
+      count: 0,
+      readings: []
+    };
+  }
+  
+  // Ensure readings array exists
+  if (!Array.isArray(data.readings)) {
+    console.error('Invalid history data structure:', data);
+    return {
+      hours: hours,
+      count: 0,
+      readings: []
+    };
+  }
+  
+  return data;
 }
