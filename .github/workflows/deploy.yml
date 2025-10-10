@@ -61,36 +61,71 @@ jobs:
           sudo systemctl restart weather-frontend.service
           echo "✅ Frontend service restarted"
       
-      - name: Wait for Services
-        run: |
-          echo "⏳ Waiting for services to start..."
-          sleep 5
-      
       - name: Health Check - Backend
         run: |
           echo "🔍 Checking backend health..."
+          echo "⏳ Waiting for backend to be ready..."
           
-          if curl -f -s http://localhost:8000/latest > /dev/null; then
-            echo "✅ Backend is responding at http://localhost:8000/latest"
-          else
-            echo "❌ Backend health check failed"
-            echo "Checking service status..."
-            sudo systemctl status weather.service --no-pager || true
-            exit 1
-          fi
+          # Retry logic: try for up to 60 seconds
+          max_attempts=12
+          attempt=1
+          
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt/$max_attempts..."
+            
+            if curl -f -s http://localhost:8000/latest > /dev/null 2>&1; then
+              echo "✅ Backend is responding at http://localhost:8000/latest"
+              exit 0
+            fi
+            
+            if [ $attempt -lt $max_attempts ]; then
+              echo "Not ready yet, waiting 5 seconds..."
+              sleep 5
+            fi
+            
+            attempt=$((attempt + 1))
+          done
+          
+          echo "❌ Backend health check failed after ${max_attempts} attempts"
+          echo "Checking service status..."
+          sudo systemctl status weather.service --no-pager || true
+          echo ""
+          echo "Recent logs:"
+          journalctl -u weather.service -n 30 --no-pager || true
+          exit 1
       
       - name: Health Check - Frontend
         run: |
           echo "🔍 Checking frontend health..."
+          echo "⏳ Waiting for frontend to be ready..."
           
-          if curl -f -s http://localhost:3000 > /dev/null; then
-            echo "✅ Frontend is responding at http://localhost:3000"
-          else
-            echo "❌ Frontend health check failed"
-            echo "Checking service status..."
-            sudo systemctl status weather-frontend.service --no-pager || true
-            exit 1
-          fi
+          # Retry logic: try for up to 60 seconds
+          max_attempts=12
+          attempt=1
+          
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt/$max_attempts..."
+            
+            if curl -f -s http://localhost:3000 > /dev/null 2>&1; then
+              echo "✅ Frontend is responding at http://localhost:3000"
+              exit 0
+            fi
+            
+            if [ $attempt -lt $max_attempts ]; then
+              echo "Not ready yet, waiting 5 seconds..."
+              sleep 5
+            fi
+            
+            attempt=$((attempt + 1))
+          done
+          
+          echo "❌ Frontend health check failed after ${max_attempts} attempts"
+          echo "Checking service status..."
+          sudo systemctl status weather-frontend.service --no-pager || true
+          echo ""
+          echo "Recent logs:"
+          journalctl -u weather-frontend.service -n 30 --no-pager || true
+          exit 1
       
       - name: Deployment Summary
         if: success()

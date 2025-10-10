@@ -70,18 +70,22 @@ echo ""
 echo "✅ Runner configured successfully!"
 echo ""
 
-# Set up sudo permissions for systemctl
+# Set up sudo permissions for systemctl and journalctl
 echo "🔐 Setting up sudo permissions for service management..."
-SUDOERS_LINE="$USER ALL=(ALL) NOPASSWD: /bin/systemctl restart weather.service, /bin/systemctl restart weather-frontend.service, /bin/systemctl status weather.service, /bin/systemctl status weather-frontend.service"
 
-# Check if the line already exists
-if sudo grep -q "systemctl restart weather.service" /etc/sudoers.d/github-runner 2>/dev/null; then
-    echo "✅ Sudo permissions already configured"
-else
-    echo "$SUDOERS_LINE" | sudo tee /etc/sudoers.d/github-runner > /dev/null
-    sudo chmod 0440 /etc/sudoers.d/github-runner
-    echo "✅ Sudo permissions configured"
-fi
+# Create sudoers file with multiple commands
+sudo tee /etc/sudoers.d/github-runner > /dev/null << EOF
+# GitHub Actions runner permissions
+$USER ALL=(ALL) NOPASSWD: /bin/systemctl restart weather.service
+$USER ALL=(ALL) NOPASSWD: /bin/systemctl restart weather-frontend.service
+$USER ALL=(ALL) NOPASSWD: /bin/systemctl status weather.service
+$USER ALL=(ALL) NOPASSWD: /bin/systemctl status weather-frontend.service
+$USER ALL=(ALL) NOPASSWD: /bin/journalctl -u weather.service *
+$USER ALL=(ALL) NOPASSWD: /bin/journalctl -u weather-frontend.service *
+EOF
+
+sudo chmod 0440 /etc/sudoers.d/github-runner
+echo "✅ Sudo permissions configured"
 
 echo ""
 echo "📦 Installing runner as a service..."

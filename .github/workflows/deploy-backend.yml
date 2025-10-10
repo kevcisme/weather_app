@@ -33,16 +33,34 @@ jobs:
           sudo systemctl restart weather.service
           echo "✅ Backend service restarted"
       
-      - name: Wait and Health Check
+      - name: Health Check
         run: |
-          sleep 3
-          if curl -f -s http://localhost:8000/latest > /dev/null; then
-            echo "✅ Backend is healthy"
-          else
-            echo "❌ Backend health check failed"
-            sudo systemctl status weather.service --no-pager || true
-            exit 1
-          fi
+          echo "🔍 Checking backend health..."
+          echo "⏳ Waiting for backend to be ready..."
+          
+          # Retry logic: try for up to 60 seconds
+          max_attempts=12
+          attempt=1
+          
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt/$max_attempts..."
+            
+            if curl -f -s http://localhost:8000/latest > /dev/null 2>&1; then
+              echo "✅ Backend is healthy"
+              exit 0
+            fi
+            
+            if [ $attempt -lt $max_attempts ]; then
+              echo "Not ready yet, waiting 5 seconds..."
+              sleep 5
+            fi
+            
+            attempt=$((attempt + 1))
+          done
+          
+          echo "❌ Backend health check failed after ${max_attempts} attempts"
+          sudo systemctl status weather.service --no-pager || true
+          exit 1
       
       - name: Success
         if: success()
