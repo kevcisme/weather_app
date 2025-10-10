@@ -15,7 +15,8 @@ class Settings(BaseModel):
     
     # S3 Configuration
     s3_bucket: str = os.getenv("S3_BUCKET", "manoa-raspi-weather")
-    s3_prefix: str = os.getenv("S3_PREFIX", "samples")
+    s3_prefix: str = os.getenv("S3_PREFIX", "samples")  # Bronze layer (raw data)
+    s3_silver_prefix: str = os.getenv("S3_SILVER_PREFIX", "silver")  # Silver layer (enriched data)
     
     # Application Configuration
     sample_interval_sec: int = int(os.getenv("SAMPLE_INTERVAL_SEC", "900")) # i picked every 15 minutes here, just because round

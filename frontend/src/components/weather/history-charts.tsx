@@ -186,6 +186,8 @@ export function HistoryCharts({ data, isLoading, hours }: HistoryChartsProps) {
                 tick={{ fontSize: 12 }}
                 className="text-muted-foreground"
                 label={{ value: 'hPa', angle: -90, position: 'insideLeft' }}
+                domain={['dataMin - 2', 'dataMax + 2']}
+                scale="linear"
               />
               <Tooltip 
                 contentStyle={{ 

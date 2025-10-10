@@ -36,6 +36,7 @@ function getApiUrl(): string {
 const API_URL = getApiUrl();
 
 export interface WeatherReading {
+  // Bronze layer fields (raw sensor data)
   ts: string;
   temp_c: number;
   temp_f: number;
@@ -44,6 +45,19 @@ export interface WeatherReading {
   temp_from_humidity?: number;
   temp_from_pressure?: number;
   cpu_temp?: number | null;
+  
+  // Silver layer fields (calculated metrics)
+  dew_point_c?: number;
+  dew_point_f?: number;
+  comfort_index?: string;
+  pressure_trend_3h?: number | null;
+  pressure_trend_6h?: number | null;
+  pressure_trend_label?: string;
+  daily_temp_min?: number | null;
+  daily_temp_max?: number | null;
+  daily_temp_avg?: number | null;
+  daily_humidity_avg?: number | null;
+  daily_pressure_avg?: number | null;
 }
 
 export interface HistoryResponse {

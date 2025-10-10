@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getLatest, getHistory, WeatherReading, HistoryResponse } from "@/lib/api";
 import { CurrentConditions } from "@/components/weather/current-conditions";
+import { DailySummary } from "@/components/weather/daily-summary";
 import { HistoryCharts } from "@/components/weather/history-charts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Cloud } from "lucide-react";
@@ -83,6 +84,11 @@ export default function Dashboard() {
             </p>
           </div>
         )}
+
+        {/* Daily Summary - Full Width */}
+        <div className="mb-6">
+          <DailySummary data={currentData} isLoading={isLoadingCurrent} />
+        </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Current Conditions - Left Sidebar */}

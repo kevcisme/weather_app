@@ -12,15 +12,25 @@ _s3 = boto3.client(
 )
 
 def put_json_reading(d: dict):
-    # key like: raspi-weather/2025-10-06/2025-10-06T20-15-03Z.json
+    """Write raw reading to bronze layer."""
+    # key like: samples/2025-10-06/2025-10-06T20-15-03Z.json
     ts = d["ts"].replace(":", "-")
     date = d["ts"][:10]
     key = f"{settings.s3_prefix}/{date}/{ts}.json"
     _s3.put_object(Bucket=settings.s3_bucket, Key=key, Body=json.dumps(d).encode("utf-8"))
 
+
+def put_silver_reading(d: dict):
+    """Write enriched reading to silver layer."""
+    # key like: silver/2025-10-06/2025-10-06T20-15-03Z.json
+    ts = d["ts"].replace(":", "-")
+    date = d["ts"][:10]
+    key = f"{settings.s3_silver_prefix}/{date}/{ts}.json"
+    _s3.put_object(Bucket=settings.s3_bucket, Key=key, Body=json.dumps(d).encode("utf-8"))
+
 def get_latest_reading_from_s3() -> dict | None:
     """
-    Retrieve the most recent weather reading from S3.
+    Retrieve the most recent weather reading from S3 silver layer.
     Checks today and yesterday's folders.
     
     Returns:
@@ -39,7 +49,7 @@ def get_latest_reading_from_s3() -> dict | None:
     latest_time = None
     
     for date in dates_to_check:
-        prefix = f"{settings.s3_prefix}/{date}/"
+        prefix = f"{settings.s3_silver_prefix}/{date}/"
         
         try:
             # List all objects with this date prefix
@@ -77,9 +87,66 @@ def get_latest_reading_from_s3() -> dict | None:
     
     return latest_reading
 
+def get_readings_from_bronze(hours: int = 24) -> list[dict]:
+    """
+    Retrieve readings from bronze layer (raw data) for calculations.
+    Used internally for computing pressure trends and daily stats.
+    
+    Args:
+        hours: Number of hours to look back (default: 24)
+    
+    Returns:
+        A list of reading dictionaries sorted by timestamp (oldest first).
+    """
+    now = datetime.now(timezone.utc)
+    cutoff_time = now - timedelta(hours=hours)
+    
+    dates_to_check = []
+    current = cutoff_time
+    while current <= now:
+        date_str = current.strftime("%Y-%m-%d")
+        if date_str not in dates_to_check:
+            dates_to_check.append(date_str)
+        current += timedelta(days=1)
+    
+    readings = []
+    
+    for date in dates_to_check:
+        prefix = f"{settings.s3_prefix}/{date}/"
+        
+        try:
+            paginator = _s3.get_paginator('list_objects_v2')
+            pages = paginator.paginate(Bucket=settings.s3_bucket, Prefix=prefix)
+            
+            for page in pages:
+                if 'Contents' not in page:
+                    continue
+                    
+                for obj in page['Contents']:
+                    key = obj['Key']
+                    
+                    try:
+                        response = _s3.get_object(Bucket=settings.s3_bucket, Key=key)
+                        data = json.loads(response['Body'].read().decode('utf-8'))
+                        
+                        reading_time = datetime.fromisoformat(data['ts'].replace('Z', '+00:00'))
+                        
+                        if reading_time >= cutoff_time:
+                            readings.append(data)
+                            
+                    except Exception as e:
+                        continue
+                        
+        except Exception as e:
+            continue
+    
+    readings.sort(key=lambda x: x['ts'])
+    return readings
+
+
 def get_readings_last_n_hours(hours: int = 24) -> list[dict]:
     """
-    Retrieve all weather readings from the last N hours from S3.
+    Retrieve all weather readings from the last N hours from S3 silver layer.
     
     Args:
         hours: Number of hours to look back (default: 24)
@@ -102,11 +169,11 @@ def get_readings_last_n_hours(hours: int = 24) -> list[dict]:
     
     readings = []
     
-    print(f"Fetching {hours}h history. Checking dates: {dates_to_check}", flush=True)
-    print(f"Using bucket: {settings.s3_bucket}, prefix: {settings.s3_prefix}", flush=True)
+    print(f"Fetching {hours}h history from silver layer. Checking dates: {dates_to_check}", flush=True)
+    print(f"Using bucket: {settings.s3_bucket}, prefix: {settings.s3_silver_prefix}", flush=True)
     
     for date in dates_to_check:
-        prefix = f"{settings.s3_prefix}/{date}/"
+        prefix = f"{settings.s3_silver_prefix}/{date}/"
         
         try:
             # List all objects with this date prefix

@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-from .collector import read_measurement
+from .collector import read_measurement, create_silver_reading
 from .settings import settings
-from .s3 import get_readings_last_n_hours, get_latest_reading_from_s3, put_json_reading
+from .s3 import get_readings_last_n_hours, get_latest_reading_from_s3, put_json_reading, put_silver_reading
 import asyncio
 
 app = FastAPI()
@@ -21,14 +21,20 @@ app.add_middleware(
 async def start():
     """
     Background task that uploads sensor readings to S3 every 15 minutes.
+    Writes to both bronze (raw) and silver (enriched) layers.
     """
     async def upload_loop():
         while True:
             try:
-                # Read measurement and upload to S3
-                reading = read_measurement()
-                put_json_reading(reading)
-                print(f"Uploaded to S3: {reading['ts']}", flush=True)
+                # Read raw measurement (bronze)
+                bronze = read_measurement()
+                put_json_reading(bronze)
+                print(f"Bronze uploaded: {bronze['ts']}", flush=True)
+                
+                # Create and upload enriched silver reading
+                silver = create_silver_reading(bronze)
+                put_silver_reading(silver)
+                print(f"Silver uploaded: {silver['ts']}", flush=True)
             except Exception as e:
                 print(f"Error uploading to S3: {e}", flush=True)
             await asyncio.sleep(settings.sample_interval_sec)
@@ -38,8 +44,8 @@ async def start():
 @app.get("/latest")
 def get_latest():
     """
-    Get the most recent weather reading from S3.
-    This represents the last stored measurement.
+    Get the most recent weather reading from S3 silver layer.
+    This represents the last stored measurement with calculated metrics.
     """
     reading = get_latest_reading_from_s3()
     if reading is None:
@@ -49,11 +55,13 @@ def get_latest():
 @app.get("/current")
 def get_current():
     """
-    Get a real-time reading directly from the sensor.
+    Get a real-time reading directly from the sensor with calculated metrics.
     This reading is NOT stored in S3 - it's captured at the moment of the request.
     """
     try:
-        return read_measurement()
+        bronze = read_measurement()
+        silver = create_silver_reading(bronze)
+        return silver
     except Exception as e:
         return {"error": f"Failed to read sensor: {str(e)}"}
 
