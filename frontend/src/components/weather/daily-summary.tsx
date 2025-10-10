@@ -54,7 +54,7 @@ export function DailySummary({ data, isLoading }: DailySummaryProps) {
               Temperature
             </div>
             <div className="space-y-2">
-              {data.daily_temp_max !== null && (
+              {data.daily_temp_max != null && (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <ArrowUp className="h-4 w-4 text-red-500" />
@@ -63,7 +63,7 @@ export function DailySummary({ data, isLoading }: DailySummaryProps) {
                   <span className="font-semibold">{data.daily_temp_max.toFixed(1)}°F</span>
                 </div>
               )}
-              {data.daily_temp_avg !== null && (
+              {data.daily_temp_avg != null && (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Activity className="h-4 w-4 text-blue-500" />
@@ -72,7 +72,7 @@ export function DailySummary({ data, isLoading }: DailySummaryProps) {
                   <span className="font-semibold">{data.daily_temp_avg.toFixed(1)}°F</span>
                 </div>
               )}
-              {data.daily_temp_min !== null && (
+              {data.daily_temp_min != null && (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <ArrowDown className="h-4 w-4 text-blue-500" />
@@ -96,7 +96,7 @@ export function DailySummary({ data, isLoading }: DailySummaryProps) {
               <Activity className="h-4 w-4" />
               Humidity
             </div>
-            {data.daily_humidity_avg !== null ? (
+            {data.daily_humidity_avg != null ? (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Average</span>
@@ -114,7 +114,7 @@ export function DailySummary({ data, isLoading }: DailySummaryProps) {
               <Activity className="h-4 w-4" />
               Pressure
             </div>
-            {data.daily_pressure_avg !== null ? (
+            {data.daily_pressure_avg != null ? (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Average</span>
