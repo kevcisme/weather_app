@@ -90,16 +90,20 @@ def get_readings_last_n_hours(hours: int = 24) -> list[dict]:
     now = datetime.now(timezone.utc)
     cutoff_time = now - timedelta(hours=hours)
     
-    # We need to check today and potentially yesterday (to handle day boundaries)
-    dates_to_check = [
-        cutoff_time.strftime("%Y-%m-%d"),
-        now.strftime("%Y-%m-%d")
-    ]
-    
-    # Remove duplicates (in case both are the same day)
-    dates_to_check = list(set(dates_to_check))
+    # Generate all dates between cutoff and now
+    # This ensures we check all days that might contain relevant readings
+    dates_to_check = []
+    current = cutoff_time
+    while current <= now:
+        date_str = current.strftime("%Y-%m-%d")
+        if date_str not in dates_to_check:
+            dates_to_check.append(date_str)
+        current += timedelta(days=1)
     
     readings = []
+    
+    print(f"Fetching {hours}h history. Checking dates: {dates_to_check}", flush=True)
+    print(f"Using bucket: {settings.s3_bucket}, prefix: {settings.s3_prefix}", flush=True)
     
     for date in dates_to_check:
         prefix = f"{settings.s3_prefix}/{date}/"
@@ -111,6 +115,7 @@ def get_readings_last_n_hours(hours: int = 24) -> list[dict]:
             
             for page in pages:
                 if 'Contents' not in page:
+                    print(f"No contents found for prefix: {prefix}", flush=True)
                     continue
                     
                 for obj in page['Contents']:
@@ -137,5 +142,7 @@ def get_readings_last_n_hours(hours: int = 24) -> list[dict]:
     
     # Sort by timestamp (oldest first)
     readings.sort(key=lambda x: x['ts'])
+    
+    print(f"Found {len(readings)} readings in last {hours}h", flush=True)
     
     return readings
