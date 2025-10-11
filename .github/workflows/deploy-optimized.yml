@@ -1,0 +1,165 @@
+name: Deploy to Raspberry Pi (Optimized)
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Restore Environment Configuration
+        run: |
+          echo "🔧 Restoring .env file..."
+          mkdir -p $GITHUB_WORKSPACE/backend/src/weather
+          cp ~/.weather-config/backend.env $GITHUB_WORKSPACE/backend/src/weather/.env
+          echo "✅ Configuration restored"
+      
+      - name: Show deployment info
+        run: |
+          echo "🚀 Deploying Weather App to Raspberry Pi"
+          echo "============================================"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Author: ${{ github.actor }}"
+      
+      # Check what changed to skip unnecessary steps
+      - name: Detect changes
+        id: changes
+        run: |
+          # Get list of changed files
+          if [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          else
+            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          fi
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          
+          # Check if backend changed
+          if echo "$CHANGED_FILES" | grep -q "^backend/"; then
+            echo "backend_changed=true" >> $GITHUB_OUTPUT
+            echo "📦 Backend changed - will update"
+          else
+            echo "backend_changed=false" >> $GITHUB_OUTPUT
+            echo "⏭️  Backend unchanged - skipping"
+          fi
+          
+          # Check if frontend changed
+          if echo "$CHANGED_FILES" | grep -q "^frontend/"; then
+            echo "frontend_changed=true" >> $GITHUB_OUTPUT
+            echo "📦 Frontend changed - will update"
+          else
+            echo "frontend_changed=false" >> $GITHUB_OUTPUT
+            echo "⏭️  Frontend unchanged - skipping"
+          fi
+      
+      - name: Deploy Backend
+        if: steps.changes.outputs.backend_changed == 'true'
+        run: |
+          echo "📦 Deploying Backend..."
+          cd $GITHUB_WORKSPACE/backend
+          export PATH="$HOME/.cargo/bin:$PATH"
+          
+          if [ ! -d ".venv" ]; then
+            uv venv --system-site-packages
+          fi
+          
+          uv sync
+          echo "✅ Backend dependencies updated"
+      
+      - name: Deploy Frontend
+        if: steps.changes.outputs.frontend_changed == 'true'
+        run: |
+          echo "📦 Deploying Frontend..."
+          cd $GITHUB_WORKSPACE/frontend
+          
+          # Use npm install instead of npm ci to leverage cache
+          # This is much faster when package.json hasn't changed
+          npm install
+          
+          # Next.js caches builds in .next/cache - this is preserved between runs
+          npm run build
+          
+          echo "✅ Frontend built successfully"
+      
+      - name: Restart Backend Service
+        if: steps.changes.outputs.backend_changed == 'true'
+        run: |
+          echo "🔄 Restarting backend..."
+          sudo systemctl restart weather.service
+          echo "✅ Backend service restarted"
+      
+      - name: Restart Frontend Service
+        if: steps.changes.outputs.frontend_changed == 'true'
+        run: |
+          echo "🔄 Restarting frontend..."
+          sudo systemctl restart weather-frontend.service
+          echo "✅ Frontend service restarted"
+      
+      - name: Health Check - Backend
+        if: steps.changes.outputs.backend_changed == 'true'
+        run: |
+          echo "🔍 Checking backend health..."
+          max_attempts=12
+          attempt=1
+          
+          while [ $attempt -le $max_attempts ]; do
+            if curl -f -s http://localhost:8000/latest > /dev/null 2>&1; then
+              echo "✅ Backend is responding"
+              exit 0
+            fi
+            if [ $attempt -lt $max_attempts ]; then
+              sleep 5
+            fi
+            attempt=$((attempt + 1))
+          done
+          
+          echo "❌ Backend health check failed"
+          sudo systemctl status weather.service --no-pager || true
+          exit 1
+      
+      - name: Health Check - Frontend
+        if: steps.changes.outputs.frontend_changed == 'true'
+        run: |
+          echo "🔍 Checking frontend health..."
+          max_attempts=12
+          attempt=1
+          
+          while [ $attempt -le $max_attempts ]; do
+            if curl -f -s http://localhost:3000 > /dev/null 2>&1; then
+              echo "✅ Frontend is responding"
+              exit 0
+            fi
+            if [ $attempt -lt $max_attempts ]; then
+              sleep 5
+            fi
+            attempt=$((attempt + 1))
+          done
+          
+          echo "❌ Frontend health check failed"
+          sudo systemctl status weather-frontend.service --no-pager || true
+          exit 1
+      
+      - name: Deployment Summary
+        if: success()
+        run: |
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🎉 Deployment Successful!"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "Changes deployed:"
+          echo "  Backend:  ${{ steps.changes.outputs.backend_changed }}"
+          echo "  Frontend: ${{ steps.changes.outputs.frontend_changed }}"
+          echo ""
+          echo "📊 Dashboard: http://192.168.86.49:3000"
+          echo "🔌 API:       http://192.168.86.49:8000"
+          echo ""
+
