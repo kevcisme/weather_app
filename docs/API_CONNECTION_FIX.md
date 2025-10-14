@@ -37,7 +37,7 @@ The frontend was not properly calling the backend due to mismatches between:
 
 ### 4. Deployment Scripts
 
-**Updated:** `deploy/rsync_deploy.sh` and `deploy/rsync_deploy_configurable.sh`
+**Updated:** `scripts/deploy/rsync_deploy.sh` and `scripts/deploy/rsync_deploy_configurable.sh`
 
 **Changes:**
 - Exclude `.env.local` from deployment (don't copy dev config to production)
@@ -78,7 +78,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || (
 4. Frontend should call: `http://localhost:8000/latest` and `http://localhost:8000/history`
 
 ### Production (Raspberry Pi)
-1. Deploy: `./deploy/rsync_deploy.sh`
+1. Deploy: `./scripts/deploy/rsync_deploy.sh`
 2. Access: `http://192.168.86.49`
 3. Frontend should call: `/api/latest` and `/api/history` (proxied by nginx to port 8000)
 
@@ -113,7 +113,7 @@ sudo journalctl -u weather-frontend.service -f
 ## Next Steps
 
 1. **Test locally** - Make sure `http://localhost:3000` works
-2. **Deploy to Pi** - Run `./deploy/rsync_deploy.sh`
+2. **Deploy to Pi** - Run `./scripts/deploy/rsync_deploy.sh`
 3. **Test production** - Check `http://192.168.86.49`
 4. **Monitor logs** - Use `journalctl` to check for errors
 

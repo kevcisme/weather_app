@@ -14,8 +14,8 @@ ssh $RSPI 'cat > ~/apps/weather_app/frontend/.env.production.local << EOF
 NEXT_PUBLIC_API_URL=
 EOF'
 
-echo "📦 Deploying deployment scripts..."
-rsync -az --delete deploy/ $RSPI:~/apps/weather_app/deploy/
+echo "📦 Deploying scripts..."
+rsync -az --delete scripts/ $RSPI:~/apps/weather_app/scripts/
 
 echo ""
 echo "🔄 Updating dependencies and restarting services..."
@@ -31,7 +31,7 @@ if ! ssh $RSPI 'command -v uv &> /dev/null'; then
     echo ""
     echo "  ssh ${RSPI}"
     echo "  cd ~/apps/weather_app"
-    echo "  ./deploy/setup-pi.sh"
+    echo "  ./scripts/setup/setup-pi.sh"
     echo ""
     echo "After setup, you can use this script for updates."
     echo ""

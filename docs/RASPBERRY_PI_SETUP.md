@@ -16,7 +16,7 @@ Complete guide for setting up the weather station backend on your Raspberry Pi w
 
 ```bash
 # 1. Copy files to Raspberry Pi
-./deploy/rsync_deploy.sh
+./scripts/deploy/rsync_deploy.sh
 
 # 2. SSH into your Pi
 ssh pi@raspi.local  # or use IP address: ssh pi@192.168.x.x
@@ -28,7 +28,7 @@ ssh pi@raspi.local  # or use IP address: ssh pi@192.168.x.x
 cd ~/apps/weather_app
 
 # Run the automated setup
-./deploy/setup-pi.sh
+./scripts/setup/setup-pi.sh
 ```
 
 That's it! The service will start automatically and begin collecting data.
@@ -67,14 +67,14 @@ cd ~/apps/weather_app
 ```bash
 # On your dev machine, run:
 cd /Users/kevincoyle/side-projects/weather_app
-./deploy/rsync_deploy.sh
+./scripts/deploy/rsync_deploy.sh
 ```
 
 **Option B: Manual copy via SCP**
 ```bash
 # On your dev machine:
 scp -r backend/ pi@raspi.local:~/apps/weather_app/
-scp -r deploy/ pi@raspi.local:~/apps/weather_app/
+scp -r scripts/ pi@raspi.local:~/apps/weather_app/
 ```
 
 **Option C: Git clone**
@@ -137,7 +137,7 @@ Press `Ctrl+C` to stop the test server.
 cd ~/apps/weather_app
 
 # Copy service file to systemd
-sudo cp deploy/weather.service /etc/systemd/system/weather.service
+sudo cp scripts/deploy/config/weather.service /etc/systemd/system/weather.service
 
 # Reload systemd
 sudo systemctl daemon-reload
@@ -218,7 +218,7 @@ Restart the service after changes.
 ```bash
 # On your development machine:
 cd /Users/kevincoyle/side-projects/weather_app
-./deploy/rsync_deploy.sh
+./scripts/deploy/rsync_deploy.sh
 ```
 
 This script will:
@@ -509,8 +509,8 @@ All these are in the `backend/` directory:
 | Restart service | `sudo systemctl restart weather` |
 | Test endpoint | `curl http://localhost:8000/latest` |
 | List S3 files | `cd backend && uv run python list_s3_objects.py` |
-| Update code | `./deploy/rsync_deploy.sh` (from dev machine) |
+| Update code | `./scripts/deploy/rsync_deploy.sh` (from dev machine) |
 
 ---
 
-**Need help?** Check the main [README.md](README.md) or [GETTING_STARTED.md](GETTING_STARTED.md)
+**Need help?** Check the main [README.md](../README.md) or [GETTING_STARTED.md](GETTING_STARTED.md)

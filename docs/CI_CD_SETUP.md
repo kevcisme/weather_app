@@ -98,8 +98,8 @@ cd ~/apps/weather_app
 git pull
 
 # Run the switch script
-chmod +x deploy/switch-to-runner-services.sh
-bash deploy/switch-to-runner-services.sh
+chmod +x scripts/maintenance/switch-to-runner-services.sh
+bash scripts/maintenance/switch-to-runner-services.sh
 ```
 
 This will:
@@ -118,9 +118,9 @@ cd /Users/kevincoyle/side-projects/weather_app
 
 # Stage the workflow files
 git add .github/workflows/
-git add deploy/weather-runner.service
-git add deploy/weather-frontend-runner.service
-git add deploy/switch-to-runner-services.sh
+git add scripts/deploy/config/weather-runner.service
+git add scripts/deploy/config/weather-frontend-runner.service
+git add scripts/maintenance/switch-to-runner-services.sh
 git add CI_CD_SETUP.md
 git add GITHUB_RUNNER_SETUP.md
 

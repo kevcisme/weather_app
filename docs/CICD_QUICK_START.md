@@ -27,7 +27,7 @@ cd ~/apps/weather_app
 git pull
 
 # Run the switch script
-bash deploy/switch-to-runner-services.sh
+bash scripts/maintenance/switch-to-runner-services.sh
 ```
 
 This updates your systemd services to use the runner workspace. Services will start after the first deployment.
@@ -41,11 +41,11 @@ cd /Users/kevincoyle/side-projects/weather_app
 
 # Add all the new CI/CD files
 git add .github/workflows/
-git add deploy/weather-runner.service
-git add deploy/weather-frontend-runner.service
-git add deploy/switch-to-runner-services.sh
-git add deploy/test-deployment.sh
-git add deploy/uninstall-runner.sh
+git add scripts/deploy/config/weather-runner.service
+git add scripts/deploy/config/weather-frontend-runner.service
+git add scripts/maintenance/switch-to-runner-services.sh
+git add scripts/deploy/test-deployment.sh
+git add scripts/maintenance/uninstall-runner.sh
 git add CI_CD_SETUP.md
 git add GITHUB_RUNNER_SETUP.md
 git add CICD_QUICK_START.md
@@ -115,7 +115,7 @@ Watch progress: https://github.com/kevcisme/weather_app/actions
 Want to test without making real changes?
 
 ```bash
-./deploy/test-deployment.sh
+./scripts/deploy/test-deployment.sh
 ```
 
 This creates a harmless test commit and pushes it, triggering a deployment.

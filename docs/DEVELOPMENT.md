@@ -17,7 +17,7 @@ This is the recommended setup for frontend development. Your Raspberry Pi contin
 1. **Ensure your Pi backend is running:**
    ```bash
    # SSH into your Pi
-   ./deploy/quick-ssh.sh
+   ./scripts/backend/quick-ssh.sh
    
    # Check backend status
    sudo systemctl status weather
@@ -33,7 +33,7 @@ This is the recommended setup for frontend development. Your Raspberry Pi contin
 3. **Start frontend development server:**
    ```bash
    # Easy way - uses the convenience script
-   ./dev-frontend-with-pi.sh
+   ./scripts/dev/dev-frontend-with-pi.sh
    
    # Or manually
    cd frontend
@@ -52,7 +52,7 @@ If you want to run everything locally (useful for testing without the Pi):
    ```bash
    cd backend
    uv sync
-   source backendenv.sh  # Sets up AWS credentials
+   source ../scripts/backend/backendenv.sh  # Sets up AWS credentials
    uv run uvicorn weather.api:app --host 0.0.0.0 --port 8000
    ```
 
@@ -84,10 +84,10 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for details.
   - Dev locally: `http://localhost:8000`
   - Production: Leave empty (uses nginx proxy at `/api`)
 
-### Backend (`backend/backendenv.sh`)
+### Backend (`scripts/backend/backendenv.sh`)
 
 - AWS credentials for S3 access
-- See `backend/backendenv.sh` (not committed to git)
+- See `scripts/backend/backendenv.sh` (not committed to git)
 
 ## Troubleshooting
 
@@ -105,7 +105,7 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for details.
 
 3. **SSH into Pi and check service:**
    ```bash
-   ./deploy/quick-ssh.sh
+   ./scripts/backend/quick-ssh.sh
    sudo systemctl status weather
    sudo journalctl -u weather -f  # View logs
    ```
@@ -146,7 +146,7 @@ The backend exposes these endpoints:
 
 ## Next Steps
 
-- See [DEPLOYMENT.md](./DEPLOYMENT.md) for deploying changes to the Pi
-- See [README.md](./README.md) for project overview
-- See [FRONTEND_SETUP.md](./FRONTEND_SETUP.md) for frontend details
+- See [DEPLOYMENT.md](DEPLOYMENT.md) for deploying changes to the Pi
+- See [README.md](../README.md) for project overview
+- See [FRONTEND_SETUP.md](FRONTEND_SETUP.md) for frontend details
 

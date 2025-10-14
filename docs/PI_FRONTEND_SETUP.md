@@ -40,7 +40,7 @@ From your Mac:
 
 ```bash
 # Deploy everything to the Pi
-./deploy/rsync_deploy.sh
+./scripts/deploy/rsync_deploy.sh
 ```
 
 Then SSH into your Pi:
@@ -51,7 +51,7 @@ ssh pi@raspi.local
 cd ~/apps/weather_app
 
 # Run automated setup
-./deploy/setup-pi.sh
+./scripts/setup/setup-pi.sh
 ```
 
 That's it! Both services will be running.
@@ -72,7 +72,7 @@ For cleaner URLs on port 80:
 ```bash
 # On your Pi
 cd ~/apps/weather_app
-./deploy/setup-nginx.sh
+./scripts/setup/setup-nginx.sh
 ```
 
 Then access:
@@ -179,7 +179,7 @@ sudo systemctl start weather weather-frontend
 
 ```bash
 # Deploy updated code and restart services
-./deploy/rsync_deploy.sh
+./scripts/deploy/rsync_deploy.sh
 ```
 
 This will:
@@ -515,7 +515,7 @@ Point Grafana at your S3 bucket or add a metrics endpoint to the backend.
 | Check all services | `sudo systemctl status weather weather-frontend` |
 | View all logs | `journalctl -u weather -u weather-frontend -f` |
 | Restart everything | `sudo systemctl restart weather weather-frontend` |
-| Update from Mac | `./deploy/rsync_deploy.sh` |
+| Update from Mac | `./scripts/deploy/rsync_deploy.sh` |
 | Test backend | `curl http://localhost:8000/latest` |
 | Test frontend | `curl http://localhost:3000` |
 | Find Pi IP | `hostname -I` |

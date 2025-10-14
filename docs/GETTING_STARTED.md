@@ -8,7 +8,7 @@ This guide will help you get your weather station dashboard up and running quick
 
 ```bash
 # 1. Setup frontend and create .env.local
-./setup-frontend.sh
+./scripts/setup/setup-frontend.sh
 
 # 2. Configure backend (one-time setup)
 # Create backend/src/weather/.env with your AWS credentials:
@@ -22,7 +22,7 @@ SAMPLE_INTERVAL_SEC=900
 EOF
 
 # 3. Start both services
-./start-dev.sh
+./scripts/dev/start-dev.sh
 ```
 
 That's it! Your dashboard will open at http://localhost:3000
@@ -170,7 +170,7 @@ scp -r deploy/ pi@your-pi:/home/pi/weather_app/
 # On Pi, set up systemd service
 ssh pi@your-pi
 cd weather_app/deploy
-./enableservice.sh
+./scripts/setup/enableservice.sh
 sudo systemctl enable weather
 sudo systemctl start weather
 ```

@@ -20,8 +20,8 @@ sudo systemctl stop weather-frontend.service || true
 
 # Copy new service files
 echo "📝 Installing new service files..."
-sudo cp ~/apps/weather_app/deploy/weather-runner.service /etc/systemd/system/weather.service
-sudo cp ~/apps/weather_app/deploy/weather-frontend-runner.service /etc/systemd/system/weather-frontend.service
+sudo cp ~/apps/weather_app/scripts/deploy/config/weather-runner.service /etc/systemd/system/weather.service
+sudo cp ~/apps/weather_app/scripts/deploy/config/weather-frontend-runner.service /etc/systemd/system/weather-frontend.service
 
 # Reload systemd
 echo "🔄 Reloading systemd..."

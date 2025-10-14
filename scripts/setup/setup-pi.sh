@@ -132,8 +132,8 @@ npm run build
 
 echo ""
 echo "⚙️  Step 11: Setting up systemd services..."
-sudo cp ~/apps/weather_app/deploy/weather.service /etc/systemd/system/weather.service
-sudo cp ~/apps/weather_app/deploy/weather-frontend.service /etc/systemd/system/weather-frontend.service
+sudo cp ~/apps/weather_app/scripts/deploy/config/weather.service /etc/systemd/system/weather.service
+sudo cp ~/apps/weather_app/scripts/deploy/config/weather-frontend.service /etc/systemd/system/weather-frontend.service
 sudo systemctl daemon-reload
 sudo systemctl enable weather.service
 sudo systemctl enable weather-frontend.service
@@ -210,5 +210,5 @@ echo "  • History: http://$(hostname -I | awk '{print $1}'):8000/history?hours
 echo ""
 echo "Data will be uploaded to S3 every $(grep SAMPLE_INTERVAL_SEC ~/apps/weather_app/backend/src/weather/.env 2>/dev/null | cut -d= -f2 || echo '900') seconds"
 echo ""
-echo "📖 For more information, see RASPBERRY_PI_SETUP.md"
+echo "📖 For more information, see docs/RASPBERRY_PI_SETUP.md"
 echo ""

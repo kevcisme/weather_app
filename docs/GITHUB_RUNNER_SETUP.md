@@ -95,8 +95,8 @@ Once your runner is connected and showing as "Idle" in GitHub:
 
 | Task | Command |
 |------|---------|
-| Setup runner | `bash ~/setup-github-runner.sh` |
-| Configure runner | `bash ~/configure-runner.sh TOKEN REPO_URL` |
+| Setup runner | `bash ~/apps/weather_app/scripts/setup/setup-github-runner.sh` |
+| Configure runner | `bash ~/apps/weather_app/scripts/setup/configure-runner.sh TOKEN REPO_URL` |
 | Check runner status | `sudo ~/actions-runner/svc.sh status` |
 | View runner logs | `journalctl -u actions.runner.* -f` |
 | Restart runner | `sudo ~/actions-runner/svc.sh stop && sudo ~/actions-runner/svc.sh start` |

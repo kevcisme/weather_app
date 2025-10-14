@@ -348,7 +348,7 @@ npm run dev
 
 Or use the convenience script:
 ```bash
-./start-dev.sh
+./scripts/dev/start-dev.sh
 ```
 
 ### Production Setup (Pi + Vercel)

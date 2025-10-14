@@ -39,7 +39,7 @@ RUNNER_DIR="$HOME/actions-runner"
 
 if [ ! -d "$RUNNER_DIR" ]; then
     echo "❌ Error: Runner directory not found at $RUNNER_DIR"
-    echo "   Please run setup-github-runner.sh first"
+    echo "   Please run scripts/setup/setup-github-runner.sh first"
     exit 1
 fi
 

@@ -18,7 +18,7 @@ fi
 # Check if frontend .env.local exists
 if [ ! -f "frontend/.env.local" ]; then
     echo "❌ Frontend .env.local file not found!"
-    echo "Run ./setup-frontend.sh first"
+    echo "Run ./scripts/setup/setup-frontend.sh first"
     exit 1
 fi
 

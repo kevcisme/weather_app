@@ -6,7 +6,7 @@ Quick reference for deploying to your Raspberry Pi at **192.168.86.49**.
 
 ```bash
 # Deploy everything and restart services
-./deploy/rsync_deploy.sh
+./scripts/deploy/rsync_deploy.sh
 ```
 
 This will:
@@ -41,7 +41,7 @@ You can edit this file if your Pi's IP changes.
 
 ```bash
 # Use the helper script
-./deploy/quick-ssh.sh
+./scripts/backend/quick-ssh.sh
 
 # Or directly
 ssh pi@192.168.86.49
@@ -67,7 +67,7 @@ ssh pi@192.168.86.49
 ### Full Deployment
 
 ```bash
-./deploy/rsync_deploy.sh
+./scripts/deploy/rsync_deploy.sh
 ```
 
 ### Backend Only
@@ -231,13 +231,13 @@ If you need to change the IP in the scripts:
 
 2. Edit `deploy/rsync_deploy.sh`:
    ```bash
-   nano deploy/rsync_deploy.sh
+   nano scripts/deploy/rsync_deploy.sh
    # Change RSPI=pi@192.168.86.49
    ```
 
 3. Edit `deploy/quick-ssh.sh`:
    ```bash
-   nano deploy/quick-ssh.sh
+   nano scripts/backend/quick-ssh.sh
    # Change IP in ssh command
    ```
 
@@ -298,8 +298,8 @@ Add these to your browser bookmarks:
 
 | Purpose | Command/URL |
 |---------|-------------|
-| Deploy | `./deploy/rsync_deploy.sh` |
-| SSH | `./deploy/quick-ssh.sh` or `ssh pi@192.168.86.49` |
+| Deploy | `./scripts/deploy/rsync_deploy.sh` |
+| SSH | `./scripts/backend/quick-ssh.sh` or `ssh pi@192.168.86.49` |
 | Dashboard | http://192.168.86.49:3000 |
 | API | http://192.168.86.49:8000 |
 | Backend Logs | `ssh pi@192.168.86.49 'journalctl -u weather -f'` |

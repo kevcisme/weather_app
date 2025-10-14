@@ -4,7 +4,7 @@
 
 ```bash
 # From the project root
-./dev-frontend-with-pi.sh
+./scripts/dev/dev-frontend-with-pi.sh
 ```
 
 Then open http://localhost:3000 in your browser!
@@ -70,7 +70,7 @@ ping 192.168.86.49
 curl http://192.168.86.49:8000/latest
 
 # SSH into Pi and check service
-./deploy/quick-ssh.sh
+./scripts/backend/quick-ssh.sh
 sudo systemctl status weather
 ```
 
@@ -78,7 +78,7 @@ sudo systemctl status weather
 
 1. Stop dev server (Ctrl+C)
 2. Clear Next.js cache: `rm -rf frontend/.next`
-3. Restart: `./dev-frontend-with-pi.sh`
+3. Restart: `./scripts/dev/dev-frontend-with-pi.sh`
 
 ### Want to use a local backend instead?
 
@@ -98,7 +98,7 @@ npm run dev
 ## Next Steps
 
 - **Make UI changes**: Edit files in `frontend/src/`
-- **View backend logs**: `./deploy/quick-ssh.sh` then `sudo journalctl -u weather -f`
+- **View backend logs**: `./scripts/backend/quick-ssh.sh` then `sudo journalctl -u weather -f`
 - **Deploy changes**: See [DEPLOYMENT.md](./DEPLOYMENT.md)
 - **Full dev guide**: See [DEVELOPMENT.md](./DEVELOPMENT.md)
 

@@ -24,8 +24,8 @@ rsync -az --delete --exclude 'node_modules' --exclude '.next' backend/ $RSPI:~/a
 echo "Deploying frontend..."
 rsync -az --delete --exclude 'node_modules' --exclude '.next' frontend/ $RSPI:~/apps/weather_app/frontend/
 
-echo "Deploying deployment scripts..."
-rsync -az --delete deploy/ $RSPI:~/apps/weather_app/deploy/
+echo "Deploying scripts..."
+rsync -az --delete scripts/ $RSPI:~/apps/weather_app/scripts/
 
 echo ""
 echo "✅ Files deployed successfully!"
@@ -40,7 +40,7 @@ echo "Run these commands:"
 echo ""
 echo "  ssh ${RSPI}"
 echo "  cd ~/apps/weather_app"
-echo "  ./deploy/setup-pi.sh"
+echo "  ./scripts/setup/setup-pi.sh"
 echo ""
 echo "The setup script will:"
 echo "  • Install uv (Python package manager)"
@@ -58,7 +58,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo ""
     echo "🔐 SSHing into ${RSPI}..."
     echo "Once connected, run:"
-    echo "  cd ~/apps/weather_app && ./deploy/setup-pi.sh"
+    echo "  cd ~/apps/weather_app && ./scripts/setup/setup-pi.sh"
     echo ""
     ssh $RSPI
 fi
@@ -71,5 +71,5 @@ echo ""
 echo "After running the setup on your Pi:"
 echo ""
 echo "  1. Access dashboard: http://192.168.86.49:3000"
-echo "  2. For updates, use:  ./deploy/rsync_deploy.sh"
+echo "  2. For updates, use:  ./scripts/deploy/rsync_deploy.sh"
 echo ""
