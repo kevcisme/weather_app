@@ -101,7 +101,7 @@ def create_silver_reading(bronze_reading: dict) -> dict:
     silver.update(pressure_trend)
     
     # 4. Calculate daily stats (rolling calculation)
-    # Fetch today's bronze readings
+    # Fetch today's bronze readings from S3
     today_start = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
     hours_since_midnight = (current_time - today_start).total_seconds() / 3600
     todays_readings = get_readings_from_bronze(hours=int(hours_since_midnight) + 1)
@@ -111,6 +111,10 @@ def create_silver_reading(bronze_reading: dict) -> dict:
     print(f"Daily stats calc: Looking for readings from {today_str}, found {len(todays_readings)} total readings", flush=True)
     todays_readings = [r for r in todays_readings if r["ts"].startswith(today_str)]
     print(f"After filtering to today: {len(todays_readings)} readings", flush=True)
+    
+    # Include the current reading in the daily stats (important for accuracy and early-day data)
+    todays_readings.append(bronze_reading)
+    print(f"After including current reading: {len(todays_readings)} readings", flush=True)
     
     daily_stats = calculate_daily_stats(todays_readings)
     print(f"Calculated daily stats: {daily_stats}", flush=True)
